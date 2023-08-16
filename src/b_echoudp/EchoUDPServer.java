@@ -27,7 +27,8 @@ public class EchoUDPServer {
 
 
     public void init() throws Exception {
-        serverSideSocket = new DatagramSocket(PORT);
+        serverSideSocket = new DatagramSocket(PORT); // A comparación del Client, el Server necesita saber
+        // desde qué socket estar recibiendo los Datagramas. (Client does not use PORT as parameter in DatagramSocket constructor).
         while (true) {
             protocol();
         }

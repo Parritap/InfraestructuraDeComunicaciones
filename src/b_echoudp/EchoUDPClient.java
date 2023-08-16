@@ -23,11 +23,11 @@ public class EchoUDPClient {
         DatagramSocket clientSideSocket = new DatagramSocket();
 
         System.out.print("Ingrese un mensaje: ");
-        String fromUser = SCANNER.nextLine();
+        String message = SCANNER.nextLine();
 
-        send(fromUser, clientSideSocket);
+        send(message, clientSideSocket);
 
-        String fromServer = (String) receive(clientSideSocket);
+        String fromServer = receive(clientSideSocket);
         System.out.println("[Client] From server: " + fromServer);
 
         clientSideSocket.close();
@@ -48,7 +48,6 @@ public class EchoUDPClient {
         DatagramPacket packetToReceive = new DatagramPacket(bufferToReceive, bufferToReceive.length);
         socket.receive(packetToReceive);
         String receivedMessage = new String(packetToReceive.getData(), 0, packetToReceive.getLength());
-
 
         return receivedMessage;
     }
