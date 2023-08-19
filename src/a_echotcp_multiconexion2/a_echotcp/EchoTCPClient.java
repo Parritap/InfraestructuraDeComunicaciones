@@ -4,6 +4,9 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.Scanner;
 
 
@@ -18,8 +21,14 @@ public class EchoTCPClient {
     private Socket clientSideSocket;
 
     public static void main(String args[]) throws Exception {
+
         EchoTCPClient ec = new EchoTCPClient();
-        ec.init();
+        String path= "mensajes.txt";
+        List<String> lines = Files.readAllLines(Paths.get(path));
+
+        for (String line : lines) {
+            ec.init(line);
+        }
     }
 
     public EchoTCPClient() {
@@ -27,23 +36,20 @@ public class EchoTCPClient {
     }
 
 
-    public void init() throws Exception {
+    public void init(String message) throws Exception {
         clientSideSocket = new Socket(SERVER, PORT); //Sockect to connect to the server.
         createStreams(clientSideSocket); //Genera los streams de datos que se compartirań entre servidor y cliente.
-        protocol(clientSideSocket); //
+        protocol(message); //
         clientSideSocket.close();
     }
 
     /**
      * Este método pide un mensaje por consola, el que luego será escrito con la clase PrintWriter.
      *
-     * @param socket Socket del cliente.
      * @throws Exception
      */
-    public void protocol(Socket socket) throws Exception {
-        System.out.print("Ingrese un mensaje: ");
-        String fromUser = SCANNER.nextLine();
-        toNetwork.println(fromUser);
+    public void protocol(String message) throws Exception {
+        toNetwork.println(message);
         String fromServer = fromNetwork.readLine();
         System.out.println("[Client] From server: " + fromServer);
     }
