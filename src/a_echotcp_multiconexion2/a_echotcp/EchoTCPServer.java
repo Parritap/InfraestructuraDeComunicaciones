@@ -1,4 +1,4 @@
-package a_echotcp;
+package a_echotcp_multiconexion2.a_echotcp;
 
 
 import java.io.BufferedReader;
