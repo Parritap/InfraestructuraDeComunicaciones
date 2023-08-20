@@ -17,7 +17,7 @@ public class EchoTCPServer {
     }
     public void init() throws Exception {
         listener = new ServerSocket(PORT);
-        serverSideSocket = listener.accept(); //Block the program until a client connects.
+        serverSideSocket = listener.accept(); //Blocks the program until a client connects.
         System.out.println("CLIENT CONNECTED");
         createStreams(serverSideSocket);
         System.out.println("STREAMS CREATED");
