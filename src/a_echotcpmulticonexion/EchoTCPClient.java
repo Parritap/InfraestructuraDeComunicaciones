@@ -1,4 +1,4 @@
-package a_echotcp;
+package a_echotcpmulticonexion;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -14,28 +14,21 @@ public class EchoTCPClient {
     private PrintWriter toNetwork; //Esta clase convierte los datos primitivos en texto plano formateado. (Muy parecido a System.out.println
     // pero no necesariamente escribe en la consola). 
     private BufferedReader fromNetwork;
-
     private Socket clientSideSocket;
-
     public static void main(String args[]) throws Exception {
         EchoTCPClient ec = new EchoTCPClient();
         while (true) {
             ec.init();
-        }
-    }
-
+        }}
     public EchoTCPClient() {
         System.out.println("Echo TCP client is running on port: " + PORT);
     }
-
-
     public void init() throws Exception {
         clientSideSocket = new Socket(SERVER, PORT); //Sockect to connect to the server.
         createStreams(clientSideSocket); //Genera los streams de datos que se compartirań entre servidor y cliente.
         protocol(clientSideSocket); //
         clientSideSocket.close();
     }
-
     /**
      * Este método pide un mensaje por consola, el que luego será escrito con la clase PrintWriter.
      *
@@ -49,12 +42,8 @@ public class EchoTCPClient {
         String fromServer = fromNetwork.readLine();
         System.out.println("[Client] From server: " + fromServer);
     }
-
-
     private void createStreams(Socket socket) throws Exception {
         toNetwork = new PrintWriter(socket.getOutputStream(), true);
         fromNetwork = new BufferedReader(new InputStreamReader(socket.getInputStream()));
     }
-
-
 }
