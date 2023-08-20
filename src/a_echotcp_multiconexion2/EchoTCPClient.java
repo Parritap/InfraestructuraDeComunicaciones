@@ -11,7 +11,11 @@ import java.util.Scanner;
 
 import static java.lang.Thread.sleep;
 
-
+/**
+ * En esta versión modificacmos la funcion init() de manera que se le pase un String por parametro,
+ * Para que luego de instanciar un nuevo socket y crear los streams de datos, lance dicho String
+ * en el stream. Método Main.
+ */
 public class EchoTCPClient {
     private static final Scanner SCANNER = new Scanner(System.in);
     public static final String SERVER = "localhost";
