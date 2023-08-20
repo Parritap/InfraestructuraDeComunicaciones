@@ -5,7 +5,7 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 public class EchoTCPServer {
-    public static final int PORT = 3400;
+    public static final int PORT = 3500;
     private ServerSocket listener;
     private Socket serverSideSocket;
     private PrintWriter toNetwork;

@@ -10,7 +10,7 @@ import java.util.Scanner;
 public class EchoTCPClient {
     private static final Scanner SCANNER = new Scanner(System.in);
     public static final String SERVER = "localhost";
-    public static final int PORT = 3400;
+    public static final int PORT = 3500;
     private PrintWriter toNetwork; //Esta clase convierte los datos primitivos en texto plano formateado. (Muy parecido a System.out.println
     // pero no necesariamente escribe en la consola). 
     private BufferedReader fromNetwork;
