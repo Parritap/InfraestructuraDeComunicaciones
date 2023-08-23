@@ -1,4 +1,4 @@
-package a_echotcp_multiconexion2;
+package d_echotcpmulticonexion;
 
 
 import java.io.BufferedReader;
@@ -28,7 +28,8 @@ public class EchoTCPServer {
         listener = new ServerSocket(PORT);
 
         while (true) {
-            serverSideSocket = listener.accept(); //Blocks the program until a client connects.
+            serverSideSocket = listener.accept(); //Block the program until a client connects.
+
             createStreams(serverSideSocket);
             protocol(serverSideSocket);
         }
