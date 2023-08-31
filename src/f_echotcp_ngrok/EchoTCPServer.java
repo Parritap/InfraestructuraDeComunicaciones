@@ -45,7 +45,7 @@ public class EchoTCPServer {
 
     private void createStreams(Socket socket) throws Exception {
         toNetwork = new PrintWriter(socket.getOutputStream(), true);
-        fromNetwork = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        fromNetwork = new BufferedReader(new InputStreamReader(socket.getInputStream()), 1500);
     }
 
     public static void main(String args[]) throws Exception {
