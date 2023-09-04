@@ -8,7 +8,7 @@ import java.net.Socket;
 
 public class HttpServer {
 
-    private static final int PORT = 8000;
+    private static final int PORT = 6666;
 
     private ServerSocket serverSocket;
 
@@ -19,7 +19,7 @@ public class HttpServer {
     private BufferedReader fromNetwork;
 
 
-    public HttpServer(){
+    public HttpServer() {
         System.out.println(" The web server is running on port " + PORT);
     }
 
@@ -40,16 +40,20 @@ public class HttpServer {
                 System.out.println(message);
                 message = fromNetwork.readLine();
             }
-            toNetwork.println("HTTP/1.1 200 OK");
-            toNetwork.println("Content-Type: text/html");
-            toNetwork.println("\r\n");
-            toNetwork.println("<h1> Hello World </h1>");
-            toNetwork.println("<p> This is a paragraph </p>");
-            toNetwork.println("<p> This is another paragraph </p>");
+            protocol(message);
 
             socket.close();
 
         }
+    }
+
+    private void protocol(String message) {
+        String[] lineaSolicitud = (message.split("\n"))[0].split(" ");
+        String method = lineaSolicitud[0];
+        String URL = lineaSolicitud[1];
+
+
+
     }
 
 
@@ -57,7 +61,6 @@ public class HttpServer {
         toNetwork = new PrintWriter(socket.getOutputStream(), true);
         fromNetwork = new BufferedReader(new InputStreamReader(socket.getInputStream()));
     }
-
 
 
 }
