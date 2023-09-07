@@ -1,0 +1,22 @@
+
+[	java:S112e"FDefine and throw a dedicated exception instead of using a generic one.(Ÿ£¿±
+a
+java:S13019"KReplace this "switch" statement by "if" statements to increase readability.(ãØ´ú
+^
+java:S2259*"H"NullPointerException" will be thrown when invoking method "protocol()".(³Ğã‰
+=
+java:S2189!""Add an end condition to this loop.(˜ïˆÿÿÿÿÿ
+7
+java:S1170
+"!Make this final field static too.(­×ë
+œ
+java:S1186j"€Add a nested comment explaining why this method is empty, throw an UnsupportedOperationException or complete the implementation.(÷Ìüÿÿÿÿ
+v
+java:S1450"[Remove the "serverSocket" field and declare it as a local variable in the relevant methods.(“—Ó¿ıÿÿÿÿ
+p
+java:S1450"URemove the "socket" field and declare it as a local variable in the relevant methods.(Å’¬Úşÿÿÿÿ
+V	java:S1252"<This block of commented-out lines of code should be removed.(´İ•şÿÿÿÿ
+a	java:S128:"LEnd this switch case with an unconditional break, return or throw statement.(À¥Í
+7	java:S1319""Add a default case to this switch.(ãØ´ú
+A
+java:S1481C"&Remove this unused "x" local variable.(¶ï»üøÿÿÿÿ

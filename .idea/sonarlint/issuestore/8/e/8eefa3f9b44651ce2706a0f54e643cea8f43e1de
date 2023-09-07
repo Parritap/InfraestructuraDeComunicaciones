@@ -1,0 +1,12 @@
+
+[	java:S1122"FDefine and throw a dedicated exception instead of using a generic one.(äò«À
+[	java:S1127"FDefine and throw a dedicated exception instead of using a generic one.(Ÿ£¿±
+o	java:S120"ZRename this package name to match the regular expression '^[a-z_]+(\.[a-z_][a-z0-9_]*)*$'.(î©†Ù
+z
+java:S1450"_Remove the "clientSideSocket" field and declare it as a local variable in the relevant methods.(ö§ÿØúÿÿÿÿ
+E
+java:S1197"*Move the array designators [] to the type.(ùï¾ÿÿÿÿÿ
+W
+java:S1075"ARefactor your code to get this URI from a customizable parameter.(®Ã¾„
+@
+java:S1068"+Remove this unused "SCANNER" private field.(§Ç3

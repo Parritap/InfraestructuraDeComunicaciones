@@ -1,16 +1,16 @@
-package HTTP;
+package http;
+
+import org.w3c.dom.ls.LSOutput;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.text.DateFormat;
+import java.sql.SQLOutput;
 
 public class HttpServer {
 
-    private static final int PORT = 10000;
-    private final String contextPath = "src/HTTP/";
+    private static final int PORT = 8080;
+    private final String contextPath = "src/http";
 
     private ServerSocket serverSocket;
 
@@ -22,7 +22,7 @@ public class HttpServer {
 
 
     public HttpServer() {
-        System.out.println(" The web server is running on port " + PORT);
+        System.out.println("The web server is running on port " + PORT);
     }
 
 
@@ -36,22 +36,18 @@ public class HttpServer {
         while (true) {
             socket = serverSocket.accept();
             createStreams(socket);
+            System.out.println("Streams Created!");
             String message = fromNetwork.readLine();
-
-            while (message != null && !message.isEmpty()) {
-                System.out.println(message);
-                message = fromNetwork.readLine();
-            }
+           // System.out.println("FROM BROWSER:\r\n"+message);
             protocol(message);
-
             socket.close();
 
         }
     }
 
     private void protocol(String message) {
-        //System.out.println(message);
-        String[] lineaSolicitud = (message.split("\n"))[0].split(" ");
+        System.out.println(message);
+        String[] lineaSolicitud = message.split(" ");
         for (String line : lineaSolicitud) System.out.println(line);
         String method = lineaSolicitud[0];
         String url = lineaSolicitud[1];
@@ -64,10 +60,10 @@ public class HttpServer {
     }
 
     private void respondGET(String url, String httpVersion) {
-
-        StringBuilder res = new StringBuilder(httpVersion).append(" ");
         File askedResource = new File(this.contextPath + url);
-        File x = new File("src/HTTP/index.html");
+        System.out.println(askedResource);
+        StringBuilder res = new StringBuilder(httpVersion).append(" ");
+        System.out.println(askedResource.exists());
         if (askedResource.exists()) {
             res.append("200 OK\r\n");
             res.append("Server: Apache\r\n");
@@ -76,16 +72,10 @@ public class HttpServer {
             res.append("Content-Length: ").append(askedResource.length()).append("\r\n");
             res.append("Cache-Control: no-cache\r\n");
             res.append("\r\n");
-
-            try (BufferedReader reader = new BufferedReader(new FileReader(askedResource))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    res.append(line);
-                }
-
-            } catch (IOException e) {
-                System.out.println("ERROR WHEN WRITING INTO THE RESPONSE");
-            }
+            //res.append(Utils.appendFileIntoString(askedResource));
+            //System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            toNetwork.println(res);
+            sendTextFile(askedResource);
         }
         else {
             res.append("404 Not Found\r\n");
@@ -95,8 +85,8 @@ public class HttpServer {
             res.append("Content-Length: ").append(askedResource.length());
             res.append("Cache-Control: no-cache");
             res.append("\r\n\r\n");
+            toNetwork.println(res);
         }
-        toNetwork.println(res);
 
     }
 
@@ -109,5 +99,17 @@ public class HttpServer {
     private void respondePOST() {
     }
 
+
+    private void sendTextFile (File file){
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                // Append each line to the StringBuilder
+                this.toNetwork.println(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 }

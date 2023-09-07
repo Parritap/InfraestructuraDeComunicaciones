@@ -1,0 +1,13 @@
+
+`	java:S112$"FDefine and throw a dedicated exception instead of using a generic one.(€úñşûÿÿÿÿ
+[	java:S112."FDefine and throw a dedicated exception instead of using a generic one.(Ÿ£¿±
+=
+java:S2189""Add an end condition to this loop.(˜ïˆÿÿÿÿÿ
+m
+java:S1450"WRemove the "listener" field and declare it as a local variable in the relevant methods.(Ó ƒ
+u
+java:S1450"_Remove the "serverSideSocket" field and declare it as a local variable in the relevant methods.(•ê¡é
+H
+java:S1172$"-Remove this unused method parameter "socket".(€úñşûÿÿÿÿ
+E
+java:S11973"*Move the array designators [] to the type.(ùï¾ÿÿÿÿÿ
