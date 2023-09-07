@@ -1,6 +1,7 @@
 package http;
 
 import java.io.*;
+import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
@@ -57,6 +58,35 @@ public class Utils {
         }
         // Convert the StringBuilder to a String
         return fileContent.toString();
+    }
+
+
+    public static void sendFile(String pathToFile, Socket socket) {
+        try{
+            System.out.println("filename = " + pathToFile);
+            File localFile = new File(pathToFile);
+            BufferedInputStream fromFile = new BufferedInputStream(new FileInputStream(localFile));
+
+            long size = localFile.length();
+            System.out.println("size = " + size);
+
+            PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
+            printWriter.println(pathToFile);
+            printWriter.println("Size:"+size);
+
+            BufferedOutputStream toNetwork = new BufferedOutputStream(socket.getOutputStream());
+
+            byte[] blockToSend = new byte[1024];
+            int in;
+            while ((in = fromFile.read(blockToSend)) != -1){
+                toNetwork.write(blockToSend, 0, in);
+            }
+
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
     }
 
 }
