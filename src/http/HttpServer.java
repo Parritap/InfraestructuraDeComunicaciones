@@ -38,7 +38,7 @@ public class HttpServer {
             createStreams(socket);
             System.out.println("Streams Created!");
             String message = fromNetwork.readLine();
-           // System.out.println("FROM BROWSER:\r\n"+message);
+            System.out.println("FROM BROWSER:\r\n"+message);
             protocol(message);
             socket.close();
 
@@ -48,7 +48,6 @@ public class HttpServer {
     private void protocol(String message) {
         System.out.println(message);
         String[] lineaSolicitud = message.split(" ");
-        for (String line : lineaSolicitud) System.out.println(line);
         String method = lineaSolicitud[0];
         String url = lineaSolicitud[1];
         String httpVersion = lineaSolicitud[2];
@@ -61,9 +60,7 @@ public class HttpServer {
 
     private void respondGET(String url, String httpVersion) {
         File askedResource = new File(this.contextPath + url);
-        System.out.println(askedResource);
         StringBuilder res = new StringBuilder(httpVersion).append(" ");
-        System.out.println(askedResource.exists());
         if (askedResource.exists()) {
             res.append("200 OK\r\n");
             res.append("Server: Apache\r\n");
