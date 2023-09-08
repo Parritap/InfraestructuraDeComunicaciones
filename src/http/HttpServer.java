@@ -37,11 +37,15 @@ public class HttpServer {
             socket = serverSocket.accept();
             createStreams(socket);
             System.out.println("Streams Created!");
-            String message = fromNetwork.readLine();
-            System.out.println("FROM BROWSER:\r\n"+message);
-            protocol(message);
+            StringBuilder message = new StringBuilder(fromNetwork.readLine());
+            System.out.println("FROM BROWSER:\r\n");
+            String line;
+            while ((line = fromNetwork.readLine()) != null && !(line).isEmpty()) {
+                message.append(line).append("\r\n");
+            }
+            System.out.println(message);
+            protocol(message.toString());
             socket.close();
-
         }
     }
 
@@ -53,28 +57,20 @@ public class HttpServer {
         String httpVersion = lineaSolicitud[2];
 
         switch (method) {
-            case "GET": respondGET(url, httpVersion);
-            case "POST": respondePOST();
+            case "GET":
+                respondGET(url, httpVersion);
+            case "POST":
+                respondePOST();
         }
     }
 
     private void respondGET(String url, String httpVersion) {
         File askedResource = new File(this.contextPath + url);
-        StringBuilder res = new StringBuilder(httpVersion).append(" ");
         if (askedResource.exists()) {
-            res.append("200 OK\r\n");
-            res.append("Server: Apache\r\n");
-            res.append("Date: ").append(Utils.getCurrentDate()).append("\r\n");
-            res.append("Content-Type: text/html\r\n");
-            res.append("Content-Length: ").append(askedResource.length()).append("\r\n");
-            res.append("Cache-Control: no-cache\r\n");
-            res.append("\r\n");
-            //res.append(Utils.appendFileIntoString(askedResource));
-            //System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            toNetwork.println(res);
-            sendTextFile(askedResource);
-        }
-        else {
+            if (Utils.isTextFile(askedResource)) respondGetTxt(askedResource, httpVersion);
+            else respondGetBinary(askedResource, httpVersion);
+        } else { // RESOURCE NOT FOUND
+            StringBuilder res = new StringBuilder();
             res.append("404 Not Found\r\n");
             res.append("Server: Apache");
             res.append("Date: ").append(Utils.getCurrentDate()).append("\r\n");
@@ -87,6 +83,35 @@ public class HttpServer {
 
     }
 
+    private void respondGetBinary(File askedResource, String httpVersion) {
+        StringBuilder res = new StringBuilder(httpVersion).append(" ");
+        res.append("200 OK\r\n");
+        res.append("Server: Apache\r\n");
+        res.append("Date: ").append(Utils.getCurrentDate()).append("\r\n");
+        res.append("Content-Type: image/png\r\n");
+        res.append("Content-Length: ").append(askedResource.length()).append("\r\n");
+        res.append("Cache-Control: no-cache\r\n");
+        res.append("\r\n");
+        this.toNetwork.println(res);
+        Utils.sendFile(askedResource.getPath(), socket);
+
+        //ENVIAR EL ARCHIVO BINARIO AQUÍ! <------------------
+    }
+
+    private void respondGetTxt(File askedResource, String httpVersion) {
+        StringBuilder res = new StringBuilder(httpVersion).append(" ");
+        res.append("200 OK\r\n");
+        res.append("Server: Apache\r\n");
+        res.append("Date: ").append(Utils.getCurrentDate()).append("\r\n");
+        res.append("Content-Type: text/html\r\n");
+        res.append("Content-Length: ").append(askedResource.length()).append("\r\n");
+        res.append("Cache-Control: no-cache\r\n");
+        res.append("\r\n");
+        toNetwork.println(res);
+        toNetwork.println(Utils.fileToString(askedResource));
+
+    }
+
 
     private void createStreams(Socket socket) throws Exception {
         toNetwork = new PrintWriter(socket.getOutputStream(), true);
@@ -95,18 +120,4 @@ public class HttpServer {
 
     private void respondePOST() {
     }
-
-
-    private void sendTextFile (File file){
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                // Append each line to the StringBuilder
-                this.toNetwork.println(line);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
 }
