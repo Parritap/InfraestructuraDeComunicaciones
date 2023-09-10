@@ -5,6 +5,7 @@ import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
+import java.util.function.Consumer;
 
 public class Utils {
 
@@ -23,7 +24,7 @@ public class Utils {
         return sdf.format(date);
     }
 
-    public static String fileToString(String pathToFile) {
+    public static String appendFileIntoString(String pathToFile) {
 
         // Initialize an empty string to store the file contents
         StringBuilder fileContent = new StringBuilder();
@@ -41,7 +42,7 @@ public class Utils {
         return fileContent.toString();
     }
 
-    public static String fileToString(File file) {
+    public static String appendFileIntoString(File file) {
 
         // Initialize an empty string to store the file contents
         StringBuilder fileContent = new StringBuilder();
@@ -59,77 +60,27 @@ public class Utils {
         return fileContent.toString();
     }
 
-  // public static void sendBinaryFile (File file , Socket socket) throws IOException {
-  //     var dataOutput = new DataOutputStream(socket.getOutputStream());
 
-  //     dataOutput.write();
-  // }
-
-
-    public static void sendFile(String pathToFile, Socket socket) {
+    public static void sendFile(File file, Socket socket) {
         try {
-            System.out.println("filename = " + pathToFile);
-            File localFile = new File(pathToFile);
-            BufferedInputStream fromFile = new BufferedInputStream(new FileInputStream(localFile));
-
-            long size = localFile.length();
-            System.out.println("size = " + size);
-
-            PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
-
+            BufferedInputStream fromFile = new BufferedInputStream(new FileInputStream(file));
             BufferedOutputStream toNetwork = new BufferedOutputStream(socket.getOutputStream());
 
-            Thread.sleep(50);
-            byte[] blockToSend = new byte[512];
-            int bytesRead;
-            while ((bytesRead = fromFile.read(blockToSend)) != -1) {
-                toNetwork.write(blockToSend, 0, bytesRead);
+            byte[] blockToSend = new byte[1024];
+            int in;
+            while ((in = fromFile.read(blockToSend)) != -1) {
+                toNetwork.write(blockToSend, 0, in);
             }
-
-            // Close the streams and socket
-            fromFile.close();
-            toNetwork.close();
-            printWriter.close();
-            socket.close();
-
         } catch (Exception e) {
             e.printStackTrace();
         }
+
     }
 
-    public static boolean isTextFile(String filePath) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            int character;
-            while ((character = reader.read()) != -1) {
-                if (character < 32 && character != '\t' && character != '\n' && character != '\r') {
-                    // If a non-printable ASCII character (excluding tabs, newline, and carriage return) is found, it's likely a binary file.
-                    return false;
-                }
-            }
-            // If no non-printable characters are found, it's likely a text file.
-            return true;
-        } catch (IOException e) {
-            // Handle any IOExceptions (e.g., file not found).
-            e.printStackTrace();
-            return false;
-        }
+    public static boolean isImage(String url) {
+        String[] urlParts = url.split("\\.");
+        String extension = urlParts[urlParts.length - 1];
+        return extension.equals("jpg") || extension.equals("png") || extension.equals("gif");
     }
 
-    public static boolean isTextFile(File file) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            int character;
-            while ((character = reader.read()) != -1) {
-                if (character < 32 && character != '\t' && character != '\n' && character != '\r') {
-                    // If a non-printable ASCII character (excluding tabs, newline, and carriage return) is found, it's likely a binary file.
-                    return false;
-                }
-            }
-            // If no non-printable characters are found, it's likely a text file.
-            return true;
-        } catch (IOException e) {
-            // Handle any IOExceptions (e.g., file not found).
-            e.printStackTrace();
-            return false;
-        }
-    }
 }

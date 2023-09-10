@@ -37,15 +37,11 @@ public class HttpServer {
             socket = serverSocket.accept();
             createStreams(socket);
             System.out.println("Streams Created!");
-            StringBuilder message = new StringBuilder(fromNetwork.readLine());
-            System.out.println("FROM BROWSER:\r\n");
-            String line;
-            while ((line = fromNetwork.readLine()) != null && !(line).isEmpty()) {
-                message.append(line).append("\r\n");
-            }
-            System.out.println(message);
-            protocol(message.toString());
+            String message = fromNetwork.readLine();
+            System.out.println("FROM BROWSER:\r\n"+message);
+            protocol(message);
             socket.close();
+
         }
     }
 
@@ -57,58 +53,58 @@ public class HttpServer {
         String httpVersion = lineaSolicitud[2];
 
         switch (method) {
-            case "GET":
-                respondGET(url, httpVersion);
-            case "POST":
-                respondePOST();
+            case "GET": respondGET(url, httpVersion);
+            case "POST": respondePOST();
         }
     }
 
     private void respondGET(String url, String httpVersion) {
-        File askedResource = new File(this.contextPath + url);
-        if (askedResource.exists()) {
-            if (Utils.isTextFile(askedResource)) respondGetTxt(askedResource, httpVersion);
-            else respondGetBinary(askedResource, httpVersion);
-        } else { // RESOURCE NOT FOUND
-            StringBuilder res = new StringBuilder();
+        File file = new File(this.contextPath + url);
+        StringBuilder res = new StringBuilder(httpVersion).append(" ");
+        if (file.exists()) {
+
+            if (!Utils.isImage(url)) {
+                res.append("HTTP/1.1 200 OK");
+                res.append("Server:").append(socket.getLocalAddress().getHostName());
+                res.append("Date:").append(new java.util.Date());
+                res.append("Last-Modified:").append(new java.util.Date(file.lastModified()));
+
+                res.append("Cache-Control: max-age=3600, public\r\n");
+                res.append("Content-Length: ").append(file.length()).append("\r\n");
+                res.append("Content-Type: text/html\r\n");
+                res.append("Connection: close\r\n\r\n");
+                toNetwork.print(res);
+                toNetwork.flush();
+                sendTextFile(file);
+            } else{
+                //if it is indeed an image then:
+                res.append("HTTP/1.1 200 OK");
+                res.append("Server:").append(socket.getLocalAddress().getHostName());
+                res.append("Date:").append(new java.util.Date());
+                res.append("Last-Modified:").append(new java.util.Date(file.lastModified()));
+
+                res.append("Cache-Control: max-age=3600, public\r\n");
+                res.append("Content-Type: image/png\r\n");
+                res.append("Accept-Ranges: bytes\r\n");
+                res.append("Content-Length: ").append(file.length()).append("\r\n");
+                res.append("Connection: close\r\n\r\n");
+
+                toNetwork.print(res);
+                toNetwork.flush();
+                Utils.sendFile(file, socket);
+
+            }
+        }
+        else {
             res.append("404 Not Found\r\n");
             res.append("Server: Apache");
             res.append("Date: ").append(Utils.getCurrentDate()).append("\r\n");
             res.append("Content-Type: text/html");
-            res.append("Content-Length: ").append(askedResource.length());
+            res.append("Content-Length: ").append(file.length());
             res.append("Cache-Control: no-cache");
             res.append("\r\n\r\n");
             toNetwork.println(res);
         }
-
-    }
-
-    private void respondGetBinary(File askedResource, String httpVersion) {
-        StringBuilder res = new StringBuilder(httpVersion).append(" ");
-        res.append("200 OK\r\n");
-        res.append("Server: Apache\r\n");
-        res.append("Date: ").append(Utils.getCurrentDate()).append("\r\n");
-        res.append("Content-Type: image/png\r\n");
-        res.append("Content-Length: ").append(askedResource.length()).append("\r\n");
-        res.append("Cache-Control: no-cache\r\n");
-        res.append("\r\n");
-        this.toNetwork.println(res);
-        Utils.sendFile(askedResource.getPath(), socket);
-
-        //ENVIAR EL ARCHIVO BINARIO AQUÍ! <------------------
-    }
-
-    private void respondGetTxt(File askedResource, String httpVersion) {
-        StringBuilder res = new StringBuilder(httpVersion).append(" ");
-        res.append("200 OK\r\n");
-        res.append("Server: Apache\r\n");
-        res.append("Date: ").append(Utils.getCurrentDate()).append("\r\n");
-        res.append("Content-Type: text/html\r\n");
-        res.append("Content-Length: ").append(askedResource.length()).append("\r\n");
-        res.append("Cache-Control: no-cache\r\n");
-        res.append("\r\n");
-        toNetwork.println(res);
-        toNetwork.println(Utils.fileToString(askedResource));
 
     }
 
@@ -120,4 +116,18 @@ public class HttpServer {
 
     private void respondePOST() {
     }
+
+
+    private void sendTextFile (File file){
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                // Append each line to the StringBuilder
+                this.toNetwork.println(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
