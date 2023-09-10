@@ -59,27 +59,48 @@ public class HttpServer {
     }
 
     private void respondGET(String url, String httpVersion) {
-        File askedResource = new File(this.contextPath + url);
+        File file = new File(this.contextPath + url);
         StringBuilder res = new StringBuilder(httpVersion).append(" ");
-        if (askedResource.exists()) {
-            res.append("200 OK\r\n");
-            res.append("Server: Apache\r\n");
-            res.append("Date: ").append(Utils.getCurrentDate()).append("\r\n");
-            res.append("Content-Type: text/html\r\n");
-            res.append("Content-Length: ").append(askedResource.length()).append("\r\n");
-            res.append("Cache-Control: no-cache\r\n");
-            res.append("\r\n");
-            //res.append(Utils.appendFileIntoString(askedResource));
-            //System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            toNetwork.println(res);
-            sendTextFile(askedResource);
+        if (file.exists()) {
+
+            if (!Utils.isImage(url)) {
+                res.append("HTTP/1.1 200 OK");
+                res.append("Server:").append(socket.getLocalAddress().getHostName());
+                res.append("Date:").append(new java.util.Date());
+                res.append("Last-Modified:").append(new java.util.Date(file.lastModified()));
+
+                res.append("Cache-Control: max-age=3600, public\r\n");
+                res.append("Content-Length: ").append(file.length()).append("\r\n");
+                res.append("Content-Type: text/html\r\n");
+                res.append("Connection: close\r\n\r\n");
+                toNetwork.print(res);
+                toNetwork.flush();
+                sendTextFile(file);
+            } else{
+                //if it is indeed an image then:
+                res.append("HTTP/1.1 200 OK");
+                res.append("Server:").append(socket.getLocalAddress().getHostName());
+                res.append("Date:").append(new java.util.Date());
+                res.append("Last-Modified:").append(new java.util.Date(file.lastModified()));
+
+                res.append("Cache-Control: max-age=3600, public\r\n");
+                res.append("Content-Type: image/png\r\n");
+                res.append("Accept-Ranges: bytes\r\n");
+                res.append("Content-Length: ").append(file.length()).append("\r\n");
+                res.append("Connection: close\r\n\r\n");
+
+                toNetwork.print(res);
+                toNetwork.flush();
+                Utils.sendFile(file, socket);
+
+            }
         }
         else {
             res.append("404 Not Found\r\n");
             res.append("Server: Apache");
             res.append("Date: ").append(Utils.getCurrentDate()).append("\r\n");
             res.append("Content-Type: text/html");
-            res.append("Content-Length: ").append(askedResource.length());
+            res.append("Content-Length: ").append(file.length());
             res.append("Cache-Control: no-cache");
             res.append("\r\n\r\n");
             toNetwork.println(res);
