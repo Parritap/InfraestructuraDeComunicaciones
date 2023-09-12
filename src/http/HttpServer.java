@@ -6,6 +6,7 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.SQLOutput;
+import java.util.Map;
 
 public class HttpServer {
 
@@ -38,87 +39,106 @@ public class HttpServer {
             createStreams(socket);
             System.out.println("Streams Created!");
             String message = fromNetwork.readLine();
-            System.out.println("FROM BROWSER:\r\n"+message);
+            System.out.println("FROM BROWSER:\r\n" + message);
             protocol(message);
             socket.close();
-
+            reqResMessage.limpiarMensaje();
         }
     }
 
     private void protocol(String message) {
+
         System.out.println(message);
         String[] lineaSolicitud = message.split(" ");
-        String method = lineaSolicitud[0];
-        String url = lineaSolicitud[1];
-        String httpVersion = lineaSolicitud[2];
+        reqResMessage.requestLine.putAll(
+                Map.of(
+                        "httpMethod", lineaSolicitud[0],
+                        "resource", lineaSolicitud[1],
+                        "httpVersion", lineaSolicitud[2]
+                )
+        );
 
-        switch (method) {
-            case "GET": respondGET(url, httpVersion);
-            case "POST": respondePOST();
+        switch (reqResMessage.requestLine.get("httpMethod")) {
+            case "GET":
+                respondGET(reqResMessage.requestLine.get("resource"));
+                break;
+            default:
+                System.out.println("Method not supported");
         }
     }
 
-    private void respondGET(String url, String httpVersion) {
+    private void respondGET(String url) {
         File file = new File(this.contextPath + url);
-        StringBuilder res = new StringBuilder(httpVersion).append(" ");
+        StringBuilder res = new StringBuilder();
         if (file.exists()) {
 
+            reqResMessage.responseLine.replace("httpStatusCode", "200");
+            reqResMessage.responseLine.replace("httpStatusMessage", "OK");
+            reqResMessage.responseHeaders.replace("Date:", new java.util.Date().toString());
+            reqResMessage.responseHeaders.replace("Last-Modified:", new java.util.Date(file.lastModified()).toString());
+            reqResMessage.responseHeaders.replace("Content-Length:", String.valueOf(file.length()));
+
             if (!Utils.isImage(url)) {
-                res.append("HTTP/1.1 200 OK");
-                res.append("Server:").append(socket.getLocalAddress().getHostName());
-                res.append("Date:").append(new java.util.Date());
-                res.append("Last-Modified:").append(new java.util.Date(file.lastModified()));
 
-                res.append("Cache-Control: max-age=3600, public\r\n");
-                res.append("Content-Length: ").append(file.length()).append("\r\n");
-                res.append("Content-Type: text/html\r\n");
-                res.append("Connection: close\r\n\r\n");
-                toNetwork.print(res);
-                toNetwork.flush();
+                reqResMessage.responseHeaders.replace("Content-Type:", "text/html");
+                sendResponseAndCharge(constructResponse(res));
                 sendTextFile(file);
-            } else{
-                //if it is indeed an image then:
-                res.append("HTTP/1.1 200 OK");
-                res.append("Server:").append(socket.getLocalAddress().getHostName());
-                res.append("Date:").append(new java.util.Date());
-                res.append("Last-Modified:").append(new java.util.Date(file.lastModified()));
 
-                res.append("Cache-Control: max-age=3600, public\r\n");
-                res.append("Content-Type: image/png\r\n");
-                res.append("Accept-Ranges: bytes\r\n");
-                res.append("Content-Length: ").append(file.length()).append("\r\n");
-                res.append("Connection: close\r\n\r\n");
+            } else if (Utils.isImage(url)) {
 
-                toNetwork.print(res);
-                toNetwork.flush();
+                reqResMessage.responseHeaders.replace("Content-Type:", "image/png");
+                reqResMessage.responseHeaders.replace("Accept-Ranges:", "bytes");
+                sendResponseAndCharge(constructResponse(res));
                 Utils.sendFile(file, socket);
 
+            } else {
+                reqResMessage.responseLine.replace("httpStatusMessage", "File founded but no charged");
             }
-        }
-        else {
-            res.append("404 Not Found\r\n");
-            res.append("Server: Apache");
-            res.append("Date: ").append(Utils.getCurrentDate()).append("\r\n");
-            res.append("Content-Type: text/html");
-            res.append("Content-Length: ").append(file.length());
-            res.append("Cache-Control: no-cache");
-            res.append("\r\n\r\n");
-            toNetwork.println(res);
+        } else {
+
+            reqResMessage.responseLine.replace("httpStatusCode", "404");
+            reqResMessage.responseLine.replace("httpStatusMessage", "Not Found");
+            reqResMessage.responseHeaders.replace("Date:", new java.util.Date().toString());
+            reqResMessage.responseHeaders.replace("Content-Length:", String.valueOf(file.length()));
+            reqResMessage.responseHeaders.replace("Cache-Control:", "no-cache");
+            reqResMessage.responseHeaders.replace("Content-Type:", "text/html");
+
+            sendResponse(constructResponse(res));
         }
 
     }
 
+    private String constructResponse(StringBuilder res) {
+
+        res.append(
+                String.join(" ", reqResMessage.responseLine.values())
+        ).append("\n").append(
+                reqResMessage.responseHeaders.keySet().stream()
+                        .filter(key -> reqResMessage.responseHeaders.get(key) != null)
+                        .reduce("", (acumulador, key) -> acumulador + "%s %s%n".formatted(
+                                key, reqResMessage.responseHeaders.get(key)
+                        ))
+        ).append("\n");
+
+        return res.toString();
+
+    }
+
+    private void sendResponseAndCharge(String res) {
+        toNetwork.print(res);
+        toNetwork.flush();
+    }
+
+    private void sendResponse(String res) {
+        toNetwork.print(res);
+    }
 
     private void createStreams(Socket socket) throws Exception {
         toNetwork = new PrintWriter(socket.getOutputStream(), true);
         fromNetwork = new BufferedReader(new InputStreamReader(socket.getInputStream()));
     }
 
-    private void respondePOST() {
-    }
-
-
-    private void sendTextFile (File file){
+    private void sendTextFile(File file) {
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = br.readLine()) != null) {
