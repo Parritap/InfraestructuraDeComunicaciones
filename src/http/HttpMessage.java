@@ -2,7 +2,11 @@ package http;
 
 import java.util.HashMap;
 
-public class reqResMessage {
+/**
+ * Comprende tanto la solicitud como la respuesta HTTP.
+ * Va construyendo los mensajes a medida que se van recibiendo los datos.
+ */
+public class HttpMessage {
 
     public static HashMap<String, String> requestLine = new HashMap<>() {{
         put("httpMethod", null);
@@ -34,11 +38,20 @@ public class reqResMessage {
         put("Accept-Ranges:", null);
     }};
 
-    public static void limpiarMensaje() {
+    /**
+     * Limpia todos (o la mayoría de) los atributos de los siguientes mensajes de la clase:
+     * -> requestLine
+     * -> requestHeaders
+     * -> responseLine: elimina todos los atributos excepto "httpVersion"
+     * -> responseHeaders: elimina todos los atributos excepto "Server:", "Cache-Control:" y "Connection"
+     */
+    public static void limpiarMensajes() {
         requestLine.keySet().forEach(e -> requestLine.replace(e, null));
         requestHeaders.keySet().forEach(e -> requestHeaders.replace(e, null));
+
         responseLine.keySet().stream().filter(e -> !e.equals("httpVersion"))
                 .forEach(e -> responseLine.replace(e, null));
+
         responseHeaders.keySet().stream().filter(e -> !(e.equals("Server:") || e.equals("Cache-Control:") || e.equals("Connection")))
                 .forEach(e -> responseHeaders.replace(e, null));
     }
